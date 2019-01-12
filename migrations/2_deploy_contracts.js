@@ -1,4 +1,4 @@
-var StarNotary = artifacts.require('./starNotary.sol')
+var StarNotary = artifacts.require('./StarNotary.sol')
 
 module.exports = function (deployer) {
   deployer.deploy(StarNotary);

@@ -1,15 +1,16 @@
 //import 'babel-polyfill';
-const StarNotary = artifacts.require('./starNotary.sol')
+const StarNotary = artifacts.require('./StarNotary.sol')
 
 let instance;
 let accounts;
+let token_name;
 
 contract('StarNotary', async (accs) => {
     accounts = accs;
     instance = await StarNotary.deployed();
   });
 
-  it('can Create a Star', async() => {
+  it('can create a star', async() => {
     let tokenId = 1;
     await instance.createStar('Awesome Star!', tokenId, {from: accounts[0]})
     assert.equal(await instance.tokenIdToStarInfo.call(tokenId), 'Awesome Star!')
@@ -63,8 +64,45 @@ contract('StarNotary', async (accs) => {
     assert.equal(balanceOfUser2BeforeTransaction.sub(balanceAfterUser2BuysStar), starPrice);
   });
 
+  it('can lookup star', async() => {
+    let tokenId = 6;
+    await instance.createStar('New Awesome Star!', tokenId, {from: accounts[0]})
+    assert.equal(await instance.tokenIdToStarInfo.call(tokenId), 'New Awesome Star!')
+    assert.equal(await instance.lookUptokenIdToStarInfo.call(tokenId), 'New Awesome Star!')
+  });
+
+
   // Write Tests for:
 
-// 1) The token name and token symbol are added properly.
-// 2) 2 users can exchange their stars.
-// 3) Stars Tokens can be transferred from one address to another.
+  // 1) The token name and token symbol are added properly
+  it('check token name added properly', async() => {
+    assert.equal(await instance.name(), "Waller Stars")
+  });
+
+  it('check token symbol added properly', async() => {
+    assert.equal(await instance.symbol(), "WLRSTR")
+  });
+
+  // 2) 2 users can exchange their stars.
+  it('can transfer stars between users', async() => {
+    let user1 = accounts[1];
+    let user2 = accounts[2];
+    let starId1 = 7;
+    let starId2 = 8;
+    await instance.createStar('star 1', starId1, {from: user1})
+    await instance.createStar('star 2', starId2, {from: user2})
+    await instance.exchangeStars(user1, starId1, user2, starId2)
+    assert.equal(await instance.ownerOf.call(starId1), user2);
+    assert.equal(await instance.ownerOf.call(starId2), user1);
+  });
+
+  // 3) Stars Tokens can be transferred from one address to another.
+  it('owner can transfer star to another user', async() => {
+    let owner = accounts[1];
+    let transferUser = accounts[2];
+    let starId = 9;
+    await instance.createStar('star to be transfered', starId, {from: owner})
+    await instance.transferStar(transferUser, starId, {from: owner})
+    assert.equal(await instance.ownerOf.call(starId), transferUser);
+  });
+

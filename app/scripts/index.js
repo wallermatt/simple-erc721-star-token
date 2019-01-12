@@ -26,8 +26,11 @@ const createStar = async () => {
 }
 
 // Add a function lookUp to Lookup a star by ID using tokenIdToStarInfo()
-
-//
+const lookupStar = async () => {
+  const instance = await StarNotary.deployed();
+  const id = document.getElementById("lookupStarId").value;
+  App.setStatus("Star name for " + id + " is " + (await instance.lookUptokenIdToStarInfo.call(id)) + ".");
+}
 
 const App = {
   start: function () {
@@ -61,6 +64,10 @@ const App = {
 
   createStar: function () {
     createStar();
+  },
+
+  lookupStar: function () {
+    lookupStar();
   },
 
 }
